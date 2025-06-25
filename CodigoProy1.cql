@@ -13,20 +13,39 @@ SET c.species = row.species;
 LOAD CSV WITH HEADERS FROM 'https://raw.githubusercontent.com/ch0fas/ArchivosMG/refs/heads/main/Data/02__The_Two_Towers_interactions.csv' AS row
 MATCH (src:Character {name:row.source})
 MATCH (dst:Character {name:row.target})
-MERGE (src)-[:HABLA_L2 {weight:row.value}]->(dst);
+MERGE (src)-[:SPEAKS_L2 {weight:row.value}]->(dst);
 
 //Creación de Relaciones - General
 LOAD CSV WITH HEADERS FROM 'https://raw.githubusercontent.com/ch0fas/ArchivosMG/refs/heads/main/Data/all_interactions.csv' AS row
 MATCH (src:Character {name:row.source})
 MATCH (dst:Character {name:row.target})
-MERGE (src)-[:HABLA_G {weight:row.value}]->(dst);
+MERGE (src)-[:SPEAKS_G {weight:row.value}]->(dst);
 
 
 
 // Análisis Básico 
 
-// 1. 
+// 1. Graph Schema
 
+CALL db.schema.visualization;
+
+// 2. Character Nodes
+
+MATCH (c:Character)
+RETURN COUNT(DISTINCT c) AS Character_Count;
+
+// 3. Relationship Count
+
+MATCH (n) -[r]- (m)
+RETURN COUNT(DISTINCT r) AS Interaction_Count;
+
+// 4. Relationship Types
+
+CALL db.relationshipTypes;
+
+// 5. Node Properties
+
+CALL 
 
 // Análisis de Centralidad
 
