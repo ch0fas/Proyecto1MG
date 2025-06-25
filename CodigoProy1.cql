@@ -26,3 +26,9 @@ MERGE (src)-[:HABLA_G {weight:row.value}]->(dst);
 // Análisis Básico 
 
 // 1. 
+
+
+// Análisis de Centralidad
+
+
+// Análisis de Comunidad
