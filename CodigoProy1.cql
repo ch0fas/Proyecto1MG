@@ -6,8 +6,9 @@
 // Creación de Grafo
 LOAD CSV WITH HEADERS FROM 'https://raw.githubusercontent.com/ch0fas/ArchivosMG/refs/heads/main/Data/characters.csv' AS row
 CREATE (c:Character)
-SET c.name = row.character
-SET c.species = row.species;
+SET c.name = row.character,
+c.species = row.species,
+c.gender = row.gender;
 
 //Creación de Relaciones - Libro 2
 LOAD CSV WITH HEADERS FROM 'https://raw.githubusercontent.com/ch0fas/ArchivosMG/refs/heads/main/Data/02__The_Two_Towers_interactions.csv' AS row
