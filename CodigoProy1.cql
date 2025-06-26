@@ -47,6 +47,18 @@ CALL db.relationshipTypes;
 
 CALL 
 
+// Subgrafos para algoritmos de comunidad
+
+// Subgrafo Dirigido - Libro 2
+
+//Subgrafo No Dirigido - Libro 2
+
+//Subgrafo Dirigido - General
+
+//Subgrafo No Dirigido - General
+
+
+
 // Análisis de Centralidad
 
 
