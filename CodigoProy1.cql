@@ -46,7 +46,20 @@ CALL db.relationshipTypes;
 
 // 5. Node Properties
 
-CALL 
+CALL db.schema.nodeTypeProperties;
+
+// 6. Book 2 Characters
+
+MATCH (n) -[r:SPEAKS_L2]- (m)
+RETURN n,r,m
+
+// 9. Species Characters
+
+// 10. Gender of Characters
+
+// 11. Characters in Book 2 vs General Saga
+
+// 12. Women in Book 2 vs General Saga
 
 // Subgrafos para algoritmos de comunidad
 
