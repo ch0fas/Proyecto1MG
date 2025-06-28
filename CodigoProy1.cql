@@ -10,6 +10,11 @@ SET c.name = row.character,
 c.species = row.species,
 c.gender = row.gender;
 
+// Corregir nodo de Shadowfax
+MATCH (c:Character)
+WHERE c.name = 'Shadowfax'
+SET c.gender = 'Male'
+
 //Creación de Relaciones - Libro 2
 LOAD CSV WITH HEADERS FROM 'https://raw.githubusercontent.com/ch0fas/ArchivosMG/refs/heads/main/Data/02__The_Two_Towers_interactions.csv' AS row
 MATCH (src:Character {name:row.source})
@@ -51,11 +56,21 @@ CALL db.schema.nodeTypeProperties;
 // 6. Book 2 Characters
 
 MATCH (n) -[r:SPEAKS_L2]- (m)
-RETURN n,r,m
+RETURN n,r,m;
 
 // 9. Species Characters
 
+MATCH (c:Character)
+RETURN c.species AS Species,
+COUNT (DISTINCT c) AS Count
+ORDER BY Count DESC;
+
 // 10. Gender of Characters
+
+MATCH (c:Character)
+RETURN c.gender AS Gender,
+COUNT (DISTINCT c) AS Count
+ORDER BY Count DESC;
 
 // 11. Characters in Book 2 vs General Saga
 
