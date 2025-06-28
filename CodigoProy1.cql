@@ -13,7 +13,12 @@ c.gender = row.gender;
 // Corregir nodo de Shadowfax
 MATCH (c:Character)
 WHERE c.name = 'Shadowfax'
-SET c.gender = 'Male'
+SET c.gender = 'Male';
+
+// Corregir especie
+MATCH (c:Character)
+WHERE c.species = 'Ainor'
+SET c.species = 'Ainur';
 
 //Creación de Relaciones - Libro 2
 LOAD CSV WITH HEADERS FROM 'https://raw.githubusercontent.com/ch0fas/ArchivosMG/refs/heads/main/Data/02__The_Two_Towers_interactions.csv' AS row
@@ -55,7 +60,7 @@ CALL db.schema.nodeTypeProperties;
 
 // 6. Book 2 Characters
 
-MATCH (n) -[r:SPEAKS_L2]- (m)
+MATCH (n) -[r:SPEAKS_L2]-> (m)
 RETURN n,r,m;
 
 // 9. Species Characters
@@ -72,9 +77,50 @@ RETURN c.gender AS Gender,
 COUNT (DISTINCT c) AS Count
 ORDER BY Count DESC;
 
-// 11. Characters in Book 2 vs General Saga
+// 11. Species of Characters in Book 2 vs General Saga
+
+MATCH (n) -[r:SPEAKS_L2]- (m)
+WITH n,m AS charas
+RETURN DISTINCT(charas.species) AS Species_Book2;
 
 // 12. Women in Book 2 vs General Saga
+
+    // Book 2
+CALL{
+    MATCH (n) -[r:SPEAKS_L2]- (m)
+    WITH n,m AS charas
+    WHERE charas.gender = 'Female'
+    RETURN COUNT(DISTINCT(charas.name)) AS Women_Book2
+}
+    // General Saga 
+CALL{
+    MATCH (n) -[r:SPEAKS_G]- (m)
+    WITH n,m AS charas
+    WHERE charas.gender = 'Female'
+    RETURN COUNT(DISTINCT(charas.name)) AS Women_3Books
+}
+RETURN Women_Book2, Women_3Books;
+
+// 13. Graph to 2 jumps
+
+
+
+
+// 15. Characters in Book 2 vs All Books
+
+    // Book 2
+CALL{
+    MATCH (n) -[r:SPEAKS_L2]- (m)
+    WITH n,m AS charas
+    RETURN COUNT(DISTINCT(charas.name)) AS Characters_Book2
+}
+    // General Saga 
+CALL{
+    MATCH (n) -[r:SPEAKS_G]- (m)
+    WITH n,m AS charas
+    RETURN COUNT(DISTINCT(charas.name)) AS Characters_3Books
+}
+RETURN Characters_Book2, Characters_3Books;
 
 // Subgrafos para algoritmos de comunidad
 
