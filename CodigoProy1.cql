@@ -260,3 +260,38 @@ ORDER BY WCC DESC;
 MATCH (c:Character)
 RETURN c.species AS Especie, COUNT(DISTINCT c) AS Number, avg(c.wcc_G) AS WCC
 ORDER BY WCC DESC;
+
+// 3
+// Atributo TC
+CALL gds.triangleCount.write('UndirectedL2', {
+  writeProperty: 'tc_L2'
+})
+YIELD globalTriangleCount, nodeCount
+
+CALL gds.triangleCount.write('UndirectedG', {
+  writeProperty: 'tc_G'
+})
+YIELD globalTriangleCount, nodeCount
+
+MATCH (c:Character)
+RETURN c.name AS Character, c.tc_L2 AS TriangleCount
+ORDER BY TriangleCount DESC
+LIMIT 10;
+
+// 4
+MATCH (c:Character)
+RETURN c.name AS Character, c.tc_G AS TriangleCount
+ORDER BY TriangleCount DESC
+LIMIT 10;
+
+// 5
+// Atributo Louvain
+call gds.louvain.write('UndirectedL2',{writeProperty: 'louvain_L2'})
+YIELD communityCount, modularity, modularities
+
+call gds.louvain.write('UndirectedG',{writeProperty: 'louvain_G'})
+YIELD communityCount, modularity, modularities
+
+MATCH (c:Character)
+RETURN c.species AS Especie, COUNT(DISTINCT c) AS Number, avg(c.louvain_G) AS Louvain
+ORDER BY Louvain DESC;
