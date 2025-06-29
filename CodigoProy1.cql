@@ -40,6 +40,7 @@ MATCH ()-[r:SPEAKS_G]->()
 SET r.weight = toInteger(r.weight);
 
 
+
 // Análisis Básico 
 
 // 1. Graph Schema
@@ -111,7 +112,6 @@ RETURN Women_Book2, Women_3Books;
 
 
 
-
 // 15. Characters in Book 2 vs All Books
 
     // Book 2
@@ -138,7 +138,7 @@ CALL gds.graph.project(
     {orientation: 'NATURAL',
      Properties: 'weight'
     }}
-)
+);
 
 //Subgrafo No Dirigido - Libro 2
 CALL gds.graph.project(
@@ -148,7 +148,7 @@ CALL gds.graph.project(
     {orientation: 'UNDIRECTED',
      Properties: 'weight'
     }}
-)
+);
 
 //Subgrafo Dirigido - General
 CALL gds.graph.project(
@@ -158,7 +158,7 @@ CALL gds.graph.project(
     {orientation: 'NATURAL',
      Properties: 'weight'
     }}
-)
+);
 
 //Subgrafo No Dirigido - General
 CALL gds.graph.project(
@@ -168,7 +168,9 @@ CALL gds.graph.project(
     {orientation: 'UNDIRECTED',
      Properties: 'weight'
     }}
-)
+);
+
+
 
 // Análisis de Centralidad
 
@@ -236,11 +238,42 @@ call gds.closeness.write(
                 writeProperty: 'closeness_L2'
         }
 )
-YIELD centralityDistribution, nodePropertiesWritten
+YIELD centralityDistribution, nodePropertiesWritten;
 
 MATCH (c:Character)
 RETURN c.species AS Especie, avg(c.closeness_L2) AS Closeness
 ORDER BY Closeness DESC;
+
+// 6. Closeness Centrality
+
+MATCH (c:Character)
+RETURN c.name AS Character,
+c.closeness_L2 AS Closeness
+ORDER BY Closeness DESC
+LIMIT 1;
+
+// 7. Closeness Centrality in Women
+
+    // Añadir atributo Closeness General
+call gds.closeness.write(
+        'NaturalG',
+        {
+                writeProperty: 'closeness_G'
+        }
+)
+YIELD centralityDistribution, nodePropertiesWritten;
+
+MATCH (c:Character)
+WHERE c.gender = 'Female'
+RETURN c.name AS Character,
+c.closeness_G AS Closeness
+ORDER BY Closeness DESC
+LIMIT 1;
+
+// 8. Betweenness Comparison in Book 2 and Trilogy
+
+// 9. Top Betweenness in Fellowship of the Ring 
+
 
 // Análisis de Comunidad
 
