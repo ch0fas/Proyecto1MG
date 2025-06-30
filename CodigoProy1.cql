@@ -446,12 +446,17 @@ LIMIT 1;
 // Análisis de Comunidad
 
 // 1
-// Atributo WCC
-call gds.wcc.write('UndirectedL2', {writeProperty: 'wcc_L2'})
-YIELD componentCount, componentDistribution
+// Atributo LCC
+CALL gds.localClusteringCoefficient.write('UndirectedL2', {
+  writeProperty: 'lcc_L2'
+})
+YIELD averageClusteringCoefficient, nodeCount
 
-call gds.wcc.write('UndirectedG', {writeProperty: 'wcc_G'})
-YIELD componentCount, componentDistribution
+// 2
+CALL gds.localClusteringCoefficient.write('UndirectedG', {
+  writeProperty: 'lcc_G'
+})
+YIELD averageClusteringCoefficient, nodeCount
 
 MATCH (c:Character)
 RETURN c.species AS Especie, COUNT(DISTINCT c) AS Number, avg(c.wcc_L2) AS WCC
