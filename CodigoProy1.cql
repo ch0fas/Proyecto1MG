@@ -128,7 +128,9 @@ CALL{
 }
 RETURN Characters_Book2, Characters_3Books;
 
-// Subgrafos para algoritmos de centralidad
+
+
+// Subgrafos para algoritmos de centralidad y comunidad
 
 // Subgrafo Dirigido - Libro 2
 CALL gds.graph.project(
@@ -190,6 +192,8 @@ CALL gds.graph.project(
      Properties: 'weight'
     }}
 );
+
+
 
 // Análisis de Centralidad
 
@@ -492,3 +496,59 @@ YIELD communityCount, modularity, modularities
 MATCH (c:Character)
 RETURN c.species AS Especie, COUNT(DISTINCT c) AS Number, avg(c.louvain_G) AS Louvain
 ORDER BY Louvain DESC;
+
+// 6. General SCC
+
+    // SCC Attribute
+CALL gds.scc.write(
+    'NaturalG', {writeProperty: 'SCC_G'}
+)
+YIELD componentCount, componentDistribution;
+
+    // Color Correction
+MATCH (c:Character)
+SET c.SCC_G = c.SCC_G + 1
+RETURN c.SCC_G AS SCC_Color,
+COUNT(c.name) AS Count,
+COLLECT (c.name) AS Members
+ORDER BY Members, SCC_Color;
+
+// 7. Book 2 SCC
+
+    // SCC Attribute
+CALL gds.scc.write(
+    'NaturalL2', {writeProperty: 'SCC_L2'}
+)
+YIELD componentCount, componentDistribution;
+
+    // Color Correction
+MATCH (c:Character)
+SET c.SCC_L2 = c.SCC_L2 + 1
+RETURN c.SCC_L2 AS SCC_Color,
+COUNT(c.name) AS Count,
+COLLECT (c.name) AS Members
+ORDER BY Members, SCC_Color;
+
+// 8. Triangle Count with Women Nodes as Starting Points
+
+    // Search for Women in the Triangles Created
+CALL gds.triangles('UndirectedG')
+YIELD nodeA, nodeB, nodeC
+WITH 
+  gds.util.asNode(nodeA) AS a, 
+  gds.util.asNode(nodeB) AS b, 
+  gds.util.asNode(nodeC) AS c
+WHERE a.gender = 'Female' OR b.gender = 'Female' OR c.gender = 'Female'
+RETURN 
+  a.name AS nodeA, 
+  b.name AS nodeB, 
+  c.name AS nodeC
+ORDER BY nodeA, nodeB, nodeC ASC;
+
+// 9. Species with most triangles formed
+MATCH (c:Character)
+RETURN c.species AS Species, 
+COUNT(c) AS Members, 
+AVG(c.tc_G) AS TriangleCount
+ORDER BY TriangleCount DESC
+LIMIT 3;
