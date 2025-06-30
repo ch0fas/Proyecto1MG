@@ -128,7 +128,7 @@ CALL{
 }
 RETURN Characters_Book2, Characters_3Books;
 
-// Subgrafos para algoritmos de comunidad
+// Subgrafos para algoritmos de centralidad
 
 // Subgrafo Dirigido - Libro 2
 CALL gds.graph.project(
@@ -317,13 +317,17 @@ LIMIT 5;
 //10
 // Atributo degree
 CALL gds.degree.write('UndirectedG', {writeProperty:'degree_G'})
-YIELD centralityDistribution, nodePropertiesWritten
+YIELD centralityDistribution, nodePropertiesWritten;
 
 CALL gds.degree.write('UndirectedL2', {writeProperty:'degree_L2'})
-YIELD centralityDistribution, nodePropertiesWritten
+YIELD centralityDistribution, nodePropertiesWritten;
 
-MATCH (c:Character {name:'Galadriel'})
-RETURN c.name AS Character, c.degree_G AS Degree, c.scc_G AS SCC, c.tc_G AS TriangleCount, c.PageRankG AS PageRank, c.bc_G AS BC
+MATCH (c:Character)
+WHERE c.gender = 'Female'
+RETURN c.name AS Character, c.degree_G AS Degree, 
+ROUND(c.closeness_G,4) AS Closeness,
+ROUND(c.PageRankG,4) AS PageRank, 
+ROUND(c.bc_G,4) AS Betweenness
 ORDER BY Degree DESC
 LIMIT 1;
 
@@ -342,13 +346,69 @@ ORDER BY InDegree ASC;
 MATCH (c:Character {in_degree_G:0})
 RETURN COUNT(DISTINCT c)
 
-// 12
-// Atributo OutDegree
+// 12. Top 5 Out Degree in General vs L2
+    // OutDegree Attribute
 CALL gds.degree.write('NaturalG', {writeProperty:'out_degree_G'})
-YIELD centralityDistribution, nodePropertiesWritten
+YIELD centralityDistribution, nodePropertiesWritten;
 
 CALL gds.degree.write('NaturalL2', {writeProperty:'out_degree_L2'})
-YIELD centralityDistribution, nodePropertiesWritten
+YIELD centralityDistribution, nodePropertiesWritten;
+
+    // Top 5 Characters
+MATCH (c:Character)
+RETURN c.name AS Character,
+c.out_degree_G AS Out_Degree_Trilogy
+ORDER BY Out_Degree_Trilogy DESC
+LIMIT 5;
+
+MATCH (c:Character)
+RETURN c.name AS Character,
+c.out_degree_L2 AS Out_Degree_Book2
+ORDER BY Out_Degree_Book2 DESC
+LIMIT 5;
+
+// 13. Top 3 Species using max Degree in General vs Book 2
+MATCH (c:Character)
+RETURN c.species AS Species, 
+COUNT(c) AS Members, 
+AVG(c.degree_G) AS Degree_General
+ORDER BY Degree_General DESC
+LIMIT 3;
+
+MATCH (c:Character)
+RETURN c.species AS Species, 
+COUNT(c) AS Members, 
+AVG(c.degree_L2) AS Degree_Book2
+ORDER BY Degree_Book2 DESC
+LIMIT 3;
+
+// 14. Top 3 Species using min Degree in General vs Book 2
+MATCH (c:Character)
+RETURN c.species AS Species, 
+COUNT(c) AS Members, 
+AVG(c.degree_G) AS Degree_General
+ORDER BY Degree_General ASC
+LIMIT 3;
+
+MATCH (c:Character)
+WITH c.species AS Species,
+COUNT(c) AS Members,
+AVG(c.degree_L2) AS Degree_Book2
+WHERE Degree_Book2 <> 0                         // for the species that dont appear in Book 2
+RETURN Species, Members, Degree_Book2
+ORDER BY Degree_Book2 ASC
+LIMIT 3;
+
+// 15. Analysis of the Character with the Top Degree
+
+MATCH (c:Character)
+RETURN c.name AS Character, c.degree_G AS Degree, 
+ROUND(c.closeness_G,4) AS Closeness,
+ROUND(c.PageRankG,4) AS PageRank, 
+ROUND(c.bc_G,4) AS Betweenness
+ORDER BY Degree DESC
+LIMIT 1;
+
 
 
 // Análisis de Comunidad
