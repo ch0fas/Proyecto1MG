@@ -467,7 +467,7 @@ ORDER BY WCC DESC;
 CALL gds.triangleCount.write('UndirectedL2', {
   writeProperty: 'tc_L2'
 })
-YIELD globalTriangleCount, nodeCount
+YIELD globalTriangleCount, nodeCount;
 
 CALL gds.triangleCount.write('UndirectedG', {
   writeProperty: 'tc_G'
@@ -553,6 +553,16 @@ AVG(c.tc_G) AS TriangleCount
 ORDER BY TriangleCount DESC
 LIMIT 3;
 
+// 10. Species with lest triangles formed in Book 2
+MATCH (c:Character)
+WITH c.species AS Species,
+COUNT(c) AS Members,
+AVG(c.tc_L2) AS TriangleCount_L2
+WHERE TriangleCount_L2 <> 0                         // for the species that dont appear in Book 2
+RETURN Species, Members, TriangleCount_L2
+ORDER BY TriangleCount_L2 ASC
+LIMIT 3;
+
 // 11. comparasion species vs louvain
 //louvain attribute
 CALL gds.louvain.write('louvain', { writeProperty: 'louvain' })
@@ -571,3 +581,72 @@ MATCH (n) -[r:SPEAKS_L2]- (m)
 WHERE r.weight > 1
 RETURN n,r,m
 
+// 13. Label Propagation
+
+    // Label Propagation Attribute
+CALL gds.labelPropagation.write(
+    'NaturalL2', {writeProperty: 'LP_L2'}
+)
+YIELD communityCount, ranIterations, didConverge;
+
+    // Color Correction
+MATCH (c:Character)
+SET c.LP_L2 = c.LP_L2 + 1
+RETURN c.LP_L2 AS LP_Color,
+COUNT(c.name) AS Count,
+COLLECT (c.name) AS Members
+ORDER BY Members, LP_Color;
+
+// 14. Label Propagation starting with Gandalf
+
+    // Seeding
+MATCH (c:Character)
+WHERE c.name = 'Gandalf'                               // Gandalf Select
+SET c.Gandalf_Start = c.LP_L2;                         // Gandalf Seed
+
+    // Subgraph with the Seed
+CALL gds.graph.project(
+    'Gandalf_Start',
+    'Character',
+    {SPEAKS_G: {orientation: 'NATURAL'}},        
+    {nodeProperties: ['Gandalf_Start']}
+);
+
+    // Attribute with the Seed
+CALL gds.labelPropagation.write(
+    'Gandalf_Start', 
+    {seedProperty: 'Gandalf_Start',
+    writeProperty: 'LP_Gandalf'}
+)
+YIELD communityCount, ranIterations, didConverge;
+
+    // Communities
+MATCH (c:Character)
+RETURN c.LP_Gandalf AS LP_Gandalf,
+COUNT(c.name) AS Count,
+COLLECT (c.name) AS Members
+ORDER BY Members, LP_Gandalf;
+
+// 15. KMeans Book2
+
+    // Vector for KMeans Analysis
+MATCH (c:Character)
+SET c.featureVector = [c.PageRankL2, c.degree_L2]
+
+    // KMeans Subgraph
+CALL gds.graph.project(
+  'KMeans', 
+  {Character: {properties: ['featureVector']}},        // Attach properties to a subgraph
+  {SPEAKS_L2: 
+  {orientation: 'NATURAL',
+   properties: ['weight']}}
+);
+
+    // Attribute
+CALL gds.kmeans.write(
+    'KMeans', 
+    {nodeProperty: 'featureVector',
+  k: 4,
+  randomSeed: 42,
+  writeProperty: 'KMeans_L2'})
+YIELD nodePropertiesWritten;
