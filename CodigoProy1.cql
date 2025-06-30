@@ -1,7 +1,7 @@
 // Código Proyecto 1 - MG
 // Sofía Maldonado García
 // Viviana Toledo De La Fuente
-// César Adrián Sánchez Santacruz
+// César Adrián Santos Santacruz
 
 // Creación de Grafo
 LOAD CSV WITH HEADERS FROM 'https://raw.githubusercontent.com/ch0fas/ArchivosMG/refs/heads/main/Data/characters.csv' AS row
@@ -552,3 +552,22 @@ COUNT(c) AS Members,
 AVG(c.tc_G) AS TriangleCount
 ORDER BY TriangleCount DESC
 LIMIT 3;
+
+// 11. comparasion species vs louvain
+//louvain attribute
+CALL gds.louvain.write('louvain', { writeProperty: 'louvain' })
+YIELD communityCount, modularity, modularities
+// characters with more relevancy
+MATCH (n) -[r]- (m)
+WHERE r.weight > 1
+RETURN n,r,m
+
+//12. Louvain using only second book interactions
+//louvain attribute
+CALL gds.louvain.write('louvain_L2', { writeProperty: 'louvain_L2' })
+YIELD communityCount, modularity, modularities
+//character selection 
+MATCH (n) -[r:SPEAKS_L2]- (m)
+WHERE r.weight > 1
+RETURN n,r,m
+
