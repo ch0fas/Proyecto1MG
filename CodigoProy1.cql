@@ -170,7 +170,26 @@ CALL gds.graph.project(
     }}
 );
 
+//Subgrafo Inverso - Libro 2
+CALL gds.graph.project(
+    'ReverseL2', 
+    'Character', 
+    {SPEAKS_L2:
+    {orientation: 'REVERSE',
+     Properties: 'weight'
+    }}
+);
 
+
+//Subgrafo Inverso - General
+CALL gds.graph.project(
+    'ReverseG', 
+    'Character', 
+    {SPEAKS_G:
+    {orientation: 'REVERSE',
+     Properties: 'weight'
+    }}
+);
 
 // Análisis de Centralidad
 
@@ -271,8 +290,65 @@ ORDER BY Closeness DESC
 LIMIT 1;
 
 // 8. Betweenness Comparison in Book 2 and Trilogy
+// Atributo betweenness
+CALL gds.betweenness.write(
+        'NaturalL2',
+        {
+                writeProperty: 'bc_L2'
+        }
+)
+YIELD centralityDistribution, nodePropertiesWritten
+
+CALL gds.betweenness.write(
+        'NaturalG',
+        {
+                writeProperty: 'bc_G'
+        }
+)
+YIELD centralityDistribution, nodePropertiesWritten
+
+MATCH (c:Character)
+RETURN c.name AS Character, c.bc_L2 AS BC_L2
+ORDER BY BC_L2 DESC
+LIMIT 5;
 
 // 9. Top Betweenness in Fellowship of the Ring 
+
+//10
+// Atributo degree
+CALL gds.degree.write('UndirectedG', {writeProperty:'degree_G'})
+YIELD centralityDistribution, nodePropertiesWritten
+
+CALL gds.degree.write('UndirectedL2', {writeProperty:'degree_L2'})
+YIELD centralityDistribution, nodePropertiesWritten
+
+MATCH (c:Character {name:'Galadriel'})
+RETURN c.name AS Character, c.degree_G AS Degree, c.scc_G AS SCC, c.tc_G AS TriangleCount, c.PageRankG AS PageRank, c.bc_G AS BC
+ORDER BY Degree DESC
+LIMIT 1;
+
+// 11
+// Atributo InDegree
+CALL gds.degree.write('ReverseG', {writeProperty:'in_degree_G'})
+YIELD centralityDistribution, nodePropertiesWritten
+
+CALL gds.degree.write('ReverseL2', {writeProperty:'in_degree_L2'})
+YIELD centralityDistribution, nodePropertiesWritten
+
+MATCH (c:Character)
+RETURN c.name AS Character, c.in_degree_G AS InDegree
+ORDER BY InDegree ASC;
+
+MATCH (c:Character {in_degree_G:0})
+RETURN COUNT(DISTINCT c)
+
+// 12
+// Atributo OutDegree
+CALL gds.degree.write('NaturalG', {writeProperty:'out_degree_G'})
+YIELD centralityDistribution, nodePropertiesWritten
+
+CALL gds.degree.write('NaturalL2', {writeProperty:'out_degree_L2'})
+YIELD centralityDistribution, nodePropertiesWritten
 
 
 // Análisis de Comunidad
