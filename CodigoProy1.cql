@@ -110,6 +110,10 @@ RETURN Women_Book2, Women_3Books;
 
 // 13. Graph to 2 jumps
 
+// 14
+MATCH p = SHORTEST 1(c1:Character)-[:SPEAKS_G]-+(c2:Character)
+WHERE c1.name = 'Treebeard' AND c2.name = 'Elrond'
+RETURN p
 
 
 // 15. Characters in Book 2 vs All Books
