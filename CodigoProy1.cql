@@ -314,6 +314,34 @@ LIMIT 5;
 
 // 9. Top Betweenness in Fellowship of the Ring 
 
+    // New node label for ppl in Fellowship of the Ring
+MATCH (c:Character)
+WHERE c.name IN ['Gandalf', 'Frodo', 'Sam', 'Aragorn', 'Legolas', 'Gimli', 'Boromir', 'Merry', 'Pippin']
+SET c:Fellowship
+RETURN c;
+
+    // Subgraph for Fellows
+CALL gds.graph.project(
+    'FellowG', 
+    'Fellowship', 
+    {SPEAKS_G:
+    {orientation: 'NATURAL',
+     Properties: 'weight'
+    }}
+);
+
+    // Betweenness Attribute
+CALL gds.betweenness.write(
+        'FellowG', {writeProperty: 'Fellow_BC_G'})
+YIELD centralityDistribution, nodePropertiesWritten;
+
+    // Top BC in Fellowship of the Ring
+MATCH (n:Fellowship)
+RETURN n.name AS Character, 
+ROUND(n.Fellow_BC_G,4) AS Betweenness
+ORDER BY Betweenness DESC
+LIMIT 1;
+
 //10
 // Atributo degree
 CALL gds.degree.write('UndirectedG', {writeProperty:'degree_G'})
